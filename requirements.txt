@@ -2,4 +2,6 @@ fastapi
 uvicorn
 transformers
 torch
+python-dotenv
+google-generativeai
 pydantic
