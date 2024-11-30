@@ -2,16 +2,36 @@
 <html>
   <head>
     <title>Fake News Detector</title>
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <h1>Fake News Detector</h1>
     <p>
-      Highlight text on a page and click the button below to check credibility.
+      Highlight text on a page and click the button below to check its
+      credibility.
     </p>
     <button id="checkText">Check Credibility</button>
-    <div id="result"></div>
-    <div id="credibleSources"></div>
+
+    <!-- Loading Animation -->
+    <div id="loading" style="display: none; text-align: center; margin: 20px 0">
+      <div class="spinner"></div>
+      <p>Fetching data...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div id="result" class="result-section">
+      <!-- Default message -->
+      <p>Results will appear here.</p>
+    </div>
+
+    <!-- Credible Sources Section -->
+    <div id="credibleSources" class="sources-section">
+      <h3>Credible Sources:</h3>
+      <!-- Default message -->
+      <p>No sources to display yet.</p>
+    </div>
+    <script src="config.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

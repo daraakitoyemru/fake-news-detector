@@ -5,6 +5,7 @@ import torch
 import google.generativeai as genai
 import os
 import requests
+from collections import defaultdict
 from dotenv import load_dotenv
 
 
@@ -23,7 +24,7 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name)
 app = FastAPI()
 
 rhetoric_prompt = """
-You are an expert in rhetoric and argumentation. Analyze the following text for logical flaws, persuasive techniques, and rhetoric. Is this text likely fake or legitimate? Respond with 'Likely Fake' or 'Likely Legitimate' and explain your reasoning briefly.
+You are an expert in rhetoric and argumentation. Analyze the following text for logical flaws, persuasive techniques, and rhetoric. Is this text likely fake or legitimate? Respond with 'Likely Fake' or 'Likely Legitimate' and explain your reasoning briefly in laymans terms. Keep it short and simple.
 Text: {text}
 """
 
@@ -127,33 +128,64 @@ def fact_check_with_newsapi(claim: str) -> str:
 
 def multi_role_analysis(text: str):
     """
-    Analyze the text with multiple roles and determine a majority verdict.
+    Analyze the text with multiple roles and determine a weighted majority verdict.
     """
+    # Role definitions
     roles = {
         "Rhetoric Expert": rhetoric_prompt,
         "Sociologist": sociologist_prompt,
         "Skeptic": skeptic_prompt,
         "Neutral Observer": neutral_prompt,
         "Normal Person": normal_person_prompt,
-        "Fact-Checker":  fact_check_with_newsapi
+        "Fact-Checker": fact_check_with_newsapi  # NewsAPI-based fact-checker
     }
     
+    # Weights for each role
+    weights = {
+        "Rhetoric Expert": 1,
+        "Sociologist": 1,
+        "Skeptic": 1.5,
+        "Neutral Observer": 1,
+        "Normal Person": 0.8,
+        "Fact-Checker": 0.5
+    }
+
+    # Collect results from all roles
     results = {}
     for role_name, role_prompt in roles.items():
-        if callable(role_prompt):  # If the role is a function (like Fact-Checker)
+        if callable(role_prompt):  # If the role is a function
             result = role_prompt(text)
         else:  # If the role is a prompt string
             result = analyze_with_role(role_prompt, text)
         results[role_name] = result
-        print(f"{role_name} Result: {result}")
     
-    # Majority rule to determine verdict
-    result_values = list(results.values())
-    majority = max(set(result_values), key=result_values.count)
+    # Adjust Fact-Checker weight dynamically
+    fact_checker_result = results["Fact-Checker"]
+    if "No credible articles found" in fact_checker_result:
+        weights["Fact-Checker"] = 0.3  # Lower influence for vague results
+
+    # Calculate weighted votes
+    vote_counts = defaultdict(float)
+    for role_name, verdict in results.items():
+        base_verdict = verdict.split('.')[0]  # Extract 'Likely Legitimate' or 'Likely Fake'
+        vote_counts[base_verdict] += weights[role_name]
+
+    # Determine the majority verdict based on weights
+    majority_verdict = max(vote_counts, key=vote_counts.get)
+
+    # Fallback explanation logic
+    majority_explanation = ""
+    for role_name, verdict in results.items():
+        if majority_verdict in verdict:
+            majority_explanation = verdict  # Use the first matching explanation
+            break
+    if not majority_explanation:
+        majority_explanation = "No detailed explanation available for the majority verdict."
+
     return {
         "summary_verdict": {
-            "verdict": majority.split('.')[0],  # Only keep 'Likely Fake' or 'Likely Legitimate'
-            "explanation": majority  # Full explanation
+            "verdict": majority_verdict,
+            "explanation": majority_explanation
         },
         "role_insights": results
     }
