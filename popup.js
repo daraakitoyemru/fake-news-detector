@@ -69,7 +69,7 @@ async function checkCredibility(text) {
     if (data.summary_verdict && data.summary_verdict.explanation) {
       resultDiv.textContent = data.summary_verdict.explanation;
     } else {
-      resultDiv.textContent = "No credible results.";
+      resultDiv.textContent = "Unable to find relevant results.";
     }
   } catch (error) {
     console.error("API error:", error); // Debugging
@@ -109,7 +109,7 @@ async function fetchCredibleSources(text) {
       });
     } else {
       sourcesDiv.textContent =
-        "No credible sources found. This has to do with the API and the <em>format</em> of search criteria.";
+        "No credible sources found. This has to do with the API and the format of search criteria.";
     }
   } catch (error) {
     console.error("Error fetching sources:", error);

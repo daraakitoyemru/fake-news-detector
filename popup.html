@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Fake News Detector</h1>
+    <h1>VerifyIt</h1>
     <p>
       Highlight text on a page and click the button below to check its
       credibility.
@@ -16,7 +16,7 @@
     <!-- Loading Animation -->
     <div id="loading" style="display: none; text-align: center; margin: 20px 0">
       <div class="spinner"></div>
-      <p>Fetching data...</p>
+      <p>Analyzing...</p>
     </div>
 
     <!-- Results Section -->
@@ -29,7 +29,10 @@
     <div id="credibleSources" class="sources-section">
       <h3>Credible Sources:</h3>
       <!-- Default message -->
-      <p>No sources to display yet.</p>
+      <p>
+        Results shown may or may not provide context for selected text. User
+        discretion is advised.
+      </p>
     </div>
     <script src="config.js"></script>
     <script src="popup.js"></script>
